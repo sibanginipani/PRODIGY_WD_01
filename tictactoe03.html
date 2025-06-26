@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic-Tac-Toe</title>
+    <style>
+        body{
+            
+            background: linear-gradient(to bottom, #fba351, #2e3192ea);
+            margin: 0;
+            min-height: 100vh;
+        }
+        #board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            width: 300px;
+            margin: 0 auto;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 1px solid black;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 50px;
+            cursor: pointer;
+        }
+        #status {
+            text-align: center;
+            font-size: 24px;
+            margin-top: 20px;
+        }
+        #reset, #modeToggle {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            font-size: 18px;
+        }
+        h1{
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <h1>Tic-Tac-Toe</h1>
+    <button id="modeToggle" onclick="toggleMode()">Play Against Friend</button>
+    <div id="board">
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+    </div>
+    <div id="status">Player X's turn</div>
+    <button id="reset" onclick="resetGame()">Reset</button>
+    <script>
+        let board = ['', '', '', '', '', '', '', '', ''];
+        let currentPlayer = 'X';
+        let gameActive = true;
+        let isSinglePlayer = true;
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        const cells = document.querySelectorAll('.cell');
+        const status = document.getElementById('status');
+        const resetButton = document.getElementById('reset');
+        const modeToggle = document.getElementById('modeToggle');
+        cells.forEach(cell => cell.addEventListener('click', handleCellClick));
+
+        function toggleMode() {
+            isSinglePlayer = !isSinglePlayer;
+            modeToggle.textContent = isSinglePlayer ? 'Play Against Computer' : 'Play with Friend';
+            resetGame();
+        }
+
+        function handleCellClick(event) { 
+            const index = event.target.dataset.index;
+            if (board[index] !== '' || !gameActive || (isSinglePlayer && currentPlayer !== 'X')) return;
+            board[index] = currentPlayer;
+            event.target.textContent = currentPlayer;
+            if (checkWinner(currentPlayer)) {
+                gameActive = false;
+                status.textContent = `Player ${currentPlayer} wins!`;
+                return;
+            }
+            if (checkDraw()) {
+                gameActive = false;
+                status.textContent = "It's a draw!";
+                return;
+            }
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            status.textContent = `Player ${currentPlayer}'s turn`;
+            if (isSinglePlayer && currentPlayer === 'O') {
+                setTimeout(aiMove, 500);
+            }
+        }
+
+        function aiMove() {
+            if (!gameActive) return;
+            const emptyIndices = board.map((cell, index) => cell === '' ? index : null).filter(index => index !== null);
+            if (emptyIndices.length === 0) return;
+            const randomIndex = emptyIndices[Math.floor(Math.random() * emptyIndices.length)];
+            board[randomIndex] = 'O';
+            cells[randomIndex].textContent = 'O';
+            if (checkWinner('O')) {
+                gameActive = false;
+                status.textContent = 'Player O wins!';
+                return;
+            }
+            if (checkDraw()) {
+                gameActive = false;
+                status.textContent = "It's a draw!";
+                return;
+            }
+            currentPlayer = 'X';
+            status.textContent = "Player X's turn";
+        }
+
+        function checkWinner(player) {
+            return winningCombinations.some(combination => combination.every(index => board[index] === player));
+        }
+
+        function checkDraw() {
+            return board.every(cell => cell !== '');
+        }
+
+        function resetGame() {
+            board = ['', '', '', '', '', '', '', '', ''];
+            currentPlayer = 'X';
+            gameActive = true;
+            cells.forEach(cell => cell.textContent = '');
+            status.textContent = `Player ${currentPlayer}'s turn`;
+        }
+    </script>
+</body>
+</html>
